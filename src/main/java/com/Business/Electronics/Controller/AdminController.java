@@ -1,6 +1,9 @@
 package com.Business.Electronics.Controller;
 
+import com.Business.Electronics.DTO.ElectDTO;
 import com.Business.Electronics.DTO.UserDTO;
+import com.Business.Electronics.Entity.ElectronicEntity;
+import com.Business.Electronics.Service.ElectronicService;
 import com.Business.Electronics.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,7 @@ import java.util.List;
 public class AdminController {
 
     private final UserService userService;
+    private final ElectronicService electronicService;
 
     @GetMapping("/test")
     public String admin() {
@@ -51,6 +55,25 @@ public class AdminController {
     public ResponseEntity<?> unBlockUser(@PathVariable String email) {
         userService.unBlockUser(email);
         return ResponseEntity.ok("User Un-Blocked");
+    }
+
+    // admin manipulating with products
+    @PutMapping("/products/add-product")
+    public ResponseEntity<ElectronicEntity> addProduct(@RequestBody ElectronicEntity entity) {
+        ElectronicEntity electronicEntity = electronicService.addProduct(entity);
+        return ResponseEntity.ok(electronicEntity);
+    }
+
+    @DeleteMapping("/products/delete-product/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        electronicService.deleteProduct(id);
+        return ResponseEntity.ok("");
+    }
+
+    @GetMapping("/products/getAllProducts")
+    public ResponseEntity<List<ElectronicEntity>> getAll() {
+        List<ElectronicEntity> list = electronicService.getProducts();
+        return ResponseEntity.ok(list);
     }
 
 
