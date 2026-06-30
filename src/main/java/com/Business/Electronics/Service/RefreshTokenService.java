@@ -1,18 +1,15 @@
 package com.Business.Electronics.Service;
 
-import com.Business.Electronics.DTO.JwtResponse;
-import com.Business.Electronics.DTO.RefreshTokenRequest;
 import com.Business.Electronics.Entity.RefreshToken;
 import com.Business.Electronics.Entity.UserEntity;
 import com.Business.Electronics.Repository.RefreshTokenRepo;
-import com.Business.Electronics.Repository.RegisterRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -23,19 +20,12 @@ public class RefreshTokenService {
     private Long refreshTokenDuration;
 
     private final RefreshTokenRepo tokenRepo;
-    private final RegisterRepo registerRepo;
     private final JwtService jwtService;
 
-    public RefreshToken createRefreshToken(String email) {
-        UserEntity user = registerRepo.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-        Optional<RefreshToken> byUserId = tokenRepo.findByUserId(user.getId());
-        if(byUserId.isPresent()) {
-            return byUserId.get();
-        }
+    public RefreshToken createRefreshToken(UserEntity entity) {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken(UUID.randomUUID().toString());
-        refreshToken.setUser(user);
+        refreshToken.setUser(entity);
         refreshToken.setExpirationDate(Instant.now().plusMillis(refreshTokenDuration));
         return tokenRepo.save(refreshToken);
     }
@@ -48,15 +38,12 @@ public class RefreshTokenService {
         return token;
     }
 
-    public JwtResponse getRefreshToken(RefreshTokenRequest tokenRequest) {
-        RefreshToken byToken = tokenRepo.findByToken(tokenRequest.getRefreshToken())
+    public Map<Object, Object> regenerateAccessToken (String refreshToken) {
+        RefreshToken byToken = tokenRepo.findByToken(refreshToken)
                 .orElseThrow(() -> new UsernameNotFoundException("Refresh Token Not exits"));
-        RefreshToken refreshToken = verifyExpiry(byToken);
-        UserEntity user = refreshToken.getUser();
+        RefreshToken refreshTokenEntity = verifyExpiry(byToken);
+        UserEntity user = refreshTokenEntity.getUser();
         String accessToken = jwtService.generateToken(user.getEmail());
-        return JwtResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken.getToken())
-                .build();
+        return Map.of("accessToken", accessToken);
     }
 }

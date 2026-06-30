@@ -22,6 +22,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtRequestFilter jwtRequestFilter;
+    private final CustomOAuth2SuccessHandler successHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity request) {
@@ -29,12 +30,14 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/home","/register","/login","/refresh-token","/activate","/forgot-password","/reset-password").permitAll()
+                        .requestMatchers("/home","/register","/login","/refresh-token","/activate","/forgot-password","/reset-password","/products/getAllProducts").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/user/**").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/**").hasAnyRole("USER","ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth ->
+                        oauth.successHandler(successHandler))
                 .build();
 
     }
@@ -49,7 +52,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE"));
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
         configuration.setAllowedHeaders(List.of("Authorization","Content-Type","Accept"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**",configuration);

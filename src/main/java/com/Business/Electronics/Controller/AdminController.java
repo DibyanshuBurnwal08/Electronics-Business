@@ -58,22 +58,16 @@ public class AdminController {
     }
 
     // admin manipulating with products
-    @PutMapping("/products/add-product")
+    @PutMapping("admin/products/add-product")
     public ResponseEntity<ElectronicEntity> addProduct(@RequestBody ElectronicEntity entity) {
         ElectronicEntity electronicEntity = electronicService.addProduct(entity);
         return ResponseEntity.ok(electronicEntity);
     }
 
-    @DeleteMapping("/products/delete-product/{id}")
+    @DeleteMapping("admin/products/delete-product/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         electronicService.deleteProduct(id);
         return ResponseEntity.ok("");
-    }
-
-    @GetMapping("/products/getAllProducts")
-    public ResponseEntity<List<ElectronicEntity>> getAll() {
-        List<ElectronicEntity> list = electronicService.getProducts();
-        return ResponseEntity.ok(list);
     }
 
 

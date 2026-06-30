@@ -34,6 +34,9 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
+
     private boolean enabled;
 
     private String activationToken;
