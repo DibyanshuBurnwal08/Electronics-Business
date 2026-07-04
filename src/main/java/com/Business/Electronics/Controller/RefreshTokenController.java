@@ -18,6 +18,7 @@ public class RefreshTokenController {
     @PostMapping("/refresh-token")
     public ResponseEntity<?> getRefreshToken(@CookieValue("refreshToken") String refreshToken) {
         Map<Object, Object> accessToken = refreshTokenService.regenerateAccessToken(refreshToken);
+        System.out.println(accessToken);
         return ResponseEntity.ok(accessToken);
     }
 

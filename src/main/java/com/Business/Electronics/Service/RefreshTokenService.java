@@ -3,6 +3,7 @@ package com.Business.Electronics.Service;
 import com.Business.Electronics.Entity.RefreshToken;
 import com.Business.Electronics.Entity.UserEntity;
 import com.Business.Electronics.Repository.RefreshTokenRepo;
+import com.Business.Electronics.exception.RefreshTokenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -33,7 +34,7 @@ public class RefreshTokenService {
     public RefreshToken verifyExpiry(RefreshToken token) {
         if(token.getExpirationDate().compareTo(Instant.now()) < 0) {
             tokenRepo.delete(token);
-            throw new RuntimeException("Refresh Token Expired");
+            throw new RefreshTokenException("Refresh Token Expired");
         }
         return token;
     }

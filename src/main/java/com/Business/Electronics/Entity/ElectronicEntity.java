@@ -36,6 +36,8 @@ public class ElectronicEntity {
     @Column(nullable = false)
     private Double price;
 
+    private Boolean available = true;
+
     @CreationTimestamp
     private LocalDate createdAt;
 

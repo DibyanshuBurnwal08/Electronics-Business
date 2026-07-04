@@ -4,6 +4,7 @@ import com.Business.Electronics.Entity.AuthProvider;
 import com.Business.Electronics.Entity.RefreshToken;
 import com.Business.Electronics.Entity.Role;
 import com.Business.Electronics.Entity.UserEntity;
+import com.Business.Electronics.Repository.RefreshTokenRepo;
 import com.Business.Electronics.Repository.RegisterRepo;
 import com.Business.Electronics.Service.JwtService;
 import com.Business.Electronics.Service.RefreshTokenService;
@@ -37,6 +38,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         String email = user.getAttribute("email");
         String name = user.getAttribute("name");
         RefreshToken refreshToken = null;
+        String role = null;
         Optional<UserEntity> byEmail = registerRepo.findByEmail(email);
         if(byEmail.isEmpty()) {
             UserEntity newUser = new UserEntity();
@@ -45,11 +47,13 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             newUser.setProvider(AuthProvider.GOOGLE);
             newUser.setEnabled(true);
             newUser.setRole(Role.USER);
+            role = newUser.getRole().toString();
             refreshToken = refreshTokenService.createRefreshToken(newUser);
             registerRepo.save(newUser);
         }
         String jwt = jwtService.generateToken(email);
         if(byEmail.isPresent()) {
+            role = byEmail.get().getRole().toString();
             refreshToken = refreshTokenService.createRefreshToken(byEmail.get());
         }
 
@@ -61,8 +65,10 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         response.addCookie(cookie);
 
         assert name != null;
+        assert role != null;
         response.sendRedirect(
                 "http://localhost:5173/oauth-success?token=" + jwt +
-                        "&userName=" + URLEncoder.encode(name, StandardCharsets.UTF_8));
+                        "&userName=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
+                        "&role="+ URLEncoder.encode(role, StandardCharsets.UTF_8));
     }
 }

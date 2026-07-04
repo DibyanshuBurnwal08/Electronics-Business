@@ -147,10 +147,10 @@ public class UserService {
     }
 
 
-    public boolean makeAdmin(String email) {
-        Optional<UserEntity> byEmail = registerRepo.findByEmail(email);
-        if(byEmail.isPresent()) {
-            UserEntity user = byEmail.get();
+    public boolean makeAdmin(Long id) {
+        Optional<UserEntity> byId = registerRepo.findById(id);
+        if(byId.isPresent()) {
+            UserEntity user = byId.get();
             user.setRole(Role.ADMIN);
             registerRepo.save(user);
             return true;
@@ -158,10 +158,10 @@ public class UserService {
         return false;
     }
 
-    public boolean deleteUser(String email) {
-        Optional<UserEntity> byEmail = registerRepo.findByEmail(email);
-        if(byEmail.isPresent()) {
-            UserEntity user = byEmail.get();
+    public boolean deleteUser(Long id) {
+        Optional<UserEntity> byId = registerRepo.findById(id);
+        if(byId.isPresent()) {
+            UserEntity user = byId.get();
             if(user.getRole().name().equals("ADMIN")) return false;
             registerRepo.delete(user);
             return true;
@@ -169,8 +169,8 @@ public class UserService {
         return false;
     }
 
-    public void blockUser(String email) {
-        UserEntity user = registerRepo.findByEmail(email)
+    public void blockUser(Long id) {
+        UserEntity user = registerRepo.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
         if(user.getRole().name().equals("ADMIN")) {
             throw new RuntimeException("Cannot Block Admin");
@@ -179,8 +179,8 @@ public class UserService {
         registerRepo.save(user);
     }
 
-    public void unBlockUser(String email) {
-        UserEntity user = registerRepo.findByEmail(email)
+    public void unBlockUser(Long id) {
+        UserEntity user = registerRepo.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
         if(user.getRole().name().equals("ADMIN")) {
             throw new RuntimeException("Cannot Un-Block Admin");
@@ -193,6 +193,10 @@ public class UserService {
         return registerRepo.findByEmail(user.getEmail())
                 .map(UserEntity::isEnabled)
                 .orElse(false);
+    }
+
+    public Integer totalUsers() {
+        return registerRepo.totalUser();
     }
 
 }

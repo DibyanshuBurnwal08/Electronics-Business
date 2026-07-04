@@ -17,7 +17,6 @@ import java.util.List;
 public class HomeController {
 
     private final ElectronicService electronicService;
-    private final UserService service;
 
     @GetMapping("/products/getAllProducts")
     public ResponseEntity<List<ElectronicEntity>> getAll() {
