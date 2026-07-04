@@ -4,6 +4,7 @@ import com.Business.Electronics.DTO.AuthDTO;
 import com.Business.Electronics.DTO.LoginDTO;
 import com.Business.Electronics.DTO.UserDTO;
 import com.Business.Electronics.Service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,8 @@ public class ProfileController {
         return ResponseEntity.status(HttpStatus.CONFLICT).body("Email Already Exits");
     }
 
+
+
     @GetMapping("/activate")
     public ResponseEntity<String> activateProfile(@RequestParam String token) {
         boolean isActive = userService.activateProfile(token);
@@ -33,10 +36,10 @@ public class ProfileController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO user) {
+    public ResponseEntity<?> login(@RequestBody LoginDTO user, HttpServletResponse response) {
         boolean isActivated = userService.isActivated(user);
         if(!isActivated) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account Not activated");
-        AuthDTO login = userService.login(user);
+        AuthDTO login = userService.login(user, response);
         if(login == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email Not Register / User is Blocked");
         }

@@ -19,7 +19,6 @@ public class ElectronicService {
         return entity;
     }
 
-
     public void deleteProduct(Long id) {
         ElectronicEntity byId = electronicsRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Item Not Found"));
@@ -28,5 +27,17 @@ public class ElectronicService {
 
     public List<ElectronicEntity> getProducts() {
         return electronicsRepo.findAll();
+    }
+
+    public Integer totalProducts() {
+        return electronicsRepo.totalProducts();
+    }
+
+    public Integer avlProducts() {
+        return electronicsRepo.avlProducts();
+    }
+
+    public List<ElectronicEntity> recentProducts() {
+        return electronicsRepo.findTop10ByOrderByCreatedAtDesc();
     }
 }

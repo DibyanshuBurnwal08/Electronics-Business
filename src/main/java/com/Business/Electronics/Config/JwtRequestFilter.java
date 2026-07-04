@@ -2,6 +2,9 @@ package com.Business.Electronics.Config;
 
 import com.Business.Electronics.Service.CustomerUserDetailsService;
 import com.Business.Electronics.Service.JwtService;
+import com.nimbusds.jwt.proc.ExpiredJWTException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,8 +35,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             token = authHeader.substring(7);
             try {
                 email = jwtService.extractEmail(token);
-            } catch (Exception e) {
-                throw new ServletException("Jwt Not found or Expired");
+            } catch (ExpiredJwtException e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("JWT token has expired");
+                return;
+            } catch (JwtException e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Invalid Jwt Token");
+                return;
             }
         }
         if(email != null && SecurityContextHolder.getContext().getAuthentication() == null) {

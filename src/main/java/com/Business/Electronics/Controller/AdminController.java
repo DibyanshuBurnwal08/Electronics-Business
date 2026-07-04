@@ -1,6 +1,5 @@
 package com.Business.Electronics.Controller;
 
-import com.Business.Electronics.DTO.ElectDTO;
 import com.Business.Electronics.DTO.UserDTO;
 import com.Business.Electronics.Entity.ElectronicEntity;
 import com.Business.Electronics.Service.ElectronicService;
@@ -30,30 +29,54 @@ public class AdminController {
         return ResponseEntity.ok(allUser);
     }
 
-    @PutMapping("make-admin/{email}")
-    public ResponseEntity<?> promoteToAdmin(@PathVariable String email) {
-        boolean makeAdmin = userService.makeAdmin(email);
+    @GetMapping("/total-users")
+    public ResponseEntity<Integer> totalUsers() {
+        Integer totalUser = userService.totalUsers();
+        return ResponseEntity.ok(totalUser);
+    }
+
+    @GetMapping("/total-products")
+    public ResponseEntity<Integer> totalProducts() {
+        Integer totalProducts = electronicService.totalProducts();
+        return ResponseEntity.ok(totalProducts);
+    }
+
+    @GetMapping("/available-products")
+    public ResponseEntity<Integer> avlProducts() {
+        Integer avlProducts = electronicService.avlProducts();
+        return ResponseEntity.ok(avlProducts);
+    }
+
+    @GetMapping("/recent-products")
+    public ResponseEntity<List<ElectronicEntity>> recentProducts() {
+        List<ElectronicEntity> recentProducts = electronicService.recentProducts();
+        return ResponseEntity.ok(recentProducts);
+    }
+
+    @PutMapping("/make-admin/{id}")
+    public ResponseEntity<?> promoteToAdmin(@PathVariable Long id) {
+        boolean makeAdmin = userService.makeAdmin(id);
         if(makeAdmin) return ResponseEntity.ok("User Changes to Admin");
         return ResponseEntity.ok("Cannot Find The User");
     }
 
-    @DeleteMapping("/delete-user/{email}")
-    public ResponseEntity<?> deleteUser(@PathVariable String email) {
-        boolean deleteUser = userService.deleteUser(email);
+    @DeleteMapping("/delete-user/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        boolean deleteUser = userService.deleteUser(id);
         if(deleteUser) return ResponseEntity.ok("User Deleted");
         return ResponseEntity.ok("Cannot Find The User");
     }
 
-    @PutMapping("/block-user/{email}")
-    public ResponseEntity<?> blockUser(@PathVariable String email) {
-        userService.blockUser(email);
+    @PutMapping("/block-user/{id}")
+    public ResponseEntity<?> blockUser(@PathVariable Long id) {
+        userService.blockUser(id);
         return ResponseEntity.ok("User Blocked");
 
     }
 
-    @PutMapping("/unblock-user/{email}")
-    public ResponseEntity<?> unBlockUser(@PathVariable String email) {
-        userService.unBlockUser(email);
+    @PutMapping("/unblock-user/{id}")
+    public ResponseEntity<?> unBlockUser(@PathVariable Long id) {
+        userService.unBlockUser(id);
         return ResponseEntity.ok("User Un-Blocked");
     }
 
@@ -65,15 +88,9 @@ public class AdminController {
     }
 
     @DeleteMapping("/products/delete-product/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
         electronicService.deleteProduct(id);
-        return ResponseEntity.ok("");
-    }
-
-    @GetMapping("/products/getAllProducts")
-    public ResponseEntity<List<ElectronicEntity>> getAll() {
-        List<ElectronicEntity> list = electronicService.getProducts();
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok("Product Deleted");
     }
 
 

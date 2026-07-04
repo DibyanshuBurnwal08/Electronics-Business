@@ -3,9 +3,13 @@ package com.Business.Electronics.Service;
 import com.Business.Electronics.DTO.AuthDTO;
 import com.Business.Electronics.DTO.LoginDTO;
 import com.Business.Electronics.DTO.UserDTO;
+import com.Business.Electronics.Entity.AuthProvider;
 import com.Business.Electronics.Entity.Role;
 import com.Business.Electronics.Entity.UserEntity;
 import com.Business.Electronics.Repository.RegisterRepo;
+import com.Business.Electronics.exception.OAuthException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -34,6 +38,9 @@ public class UserService {
     @Value("${spring.admin.password}")
     private String password;
 
+    @Value("${jwt.refresh.expiration}")
+    private Long refreshTokenDuration;
+
     public UserDTO register(UserDTO dto) {
         UserEntity entity = toEntity(dto);
         if(registerRepo.findByEmail(adminMail).isEmpty()) {
@@ -43,6 +50,7 @@ public class UserService {
             admin.setPassword(passwordEncoder.encode(password));
             admin.setRole(Role.ADMIN);
             admin.setEnabled(true);
+            admin.setProvider(AuthProvider.LOCAL);
             registerRepo.save(admin);
         }
         Optional<UserEntity> byEmail = registerRepo.findByEmail(entity.getEmail());
@@ -59,19 +67,35 @@ public class UserService {
         return null;
     }
 
-    public AuthDTO login(LoginDTO user) {
+    public AuthDTO login(LoginDTO user, HttpServletResponse response) {
+
         Optional<UserEntity> byEmail = registerRepo.findByEmail(user.getEmail());
         if (byEmail.isEmpty()) {
-            return null;
+            throw new UsernameNotFoundException("User Not Found");
         }
+
         UserEntity entity = byEmail.get();
-        if(!entity.isEnabled()) return null;
-        String token = refreshTokenService.createRefreshToken(entity.getEmail()).getToken();
+
+        if(entity.getProvider().equals(AuthProvider.GOOGLE)) {
+            throw new OAuthException("This account uses Google Sign-In. Please continue with Google");
+        }
+
+        String token = refreshTokenService.createRefreshToken(entity).getToken();
+
         if(passwordEncoder.matches(user.getPassword(), entity.getPassword())) {
+
+            Cookie cookie = new Cookie("refreshToken", token);
+            cookie.setPath("/");
+            cookie.setHttpOnly(true);
+            cookie.setSecure(false);
+            cookie.setMaxAge(240000);
+            response.addCookie(cookie);
+
             return AuthDTO.builder()
+                    .name(entity.getName())
                     .email(entity.getEmail())
+                    .role(entity.getRole().name())
                     .accessToken(jwtService.generateToken(entity.getEmail()))
-                    .refreshToken(token)
                     .build();
         }
         return null;
@@ -81,6 +105,7 @@ public class UserService {
         Optional<UserEntity> byActivationToken = registerRepo.findByActivationToken(token);
         return byActivationToken.map(user ->{
             user.setEnabled(true);
+            user.setProvider(AuthProvider.LOCAL);
             user.setActivationToken(null);
             registerRepo.save(user);
             return true;
@@ -122,10 +147,10 @@ public class UserService {
     }
 
 
-    public boolean makeAdmin(String email) {
-        Optional<UserEntity> byEmail = registerRepo.findByEmail(email);
-        if(byEmail.isPresent()) {
-            UserEntity user = byEmail.get();
+    public boolean makeAdmin(Long id) {
+        Optional<UserEntity> byId = registerRepo.findById(id);
+        if(byId.isPresent()) {
+            UserEntity user = byId.get();
             user.setRole(Role.ADMIN);
             registerRepo.save(user);
             return true;
@@ -133,10 +158,10 @@ public class UserService {
         return false;
     }
 
-    public boolean deleteUser(String email) {
-        Optional<UserEntity> byEmail = registerRepo.findByEmail(email);
-        if(byEmail.isPresent()) {
-            UserEntity user = byEmail.get();
+    public boolean deleteUser(Long id) {
+        Optional<UserEntity> byId = registerRepo.findById(id);
+        if(byId.isPresent()) {
+            UserEntity user = byId.get();
             if(user.getRole().name().equals("ADMIN")) return false;
             registerRepo.delete(user);
             return true;
@@ -144,8 +169,8 @@ public class UserService {
         return false;
     }
 
-    public void blockUser(String email) {
-        UserEntity user = registerRepo.findByEmail(email)
+    public void blockUser(Long id) {
+        UserEntity user = registerRepo.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
         if(user.getRole().name().equals("ADMIN")) {
             throw new RuntimeException("Cannot Block Admin");
@@ -154,8 +179,8 @@ public class UserService {
         registerRepo.save(user);
     }
 
-    public void unBlockUser(String email) {
-        UserEntity user = registerRepo.findByEmail(email)
+    public void unBlockUser(Long id) {
+        UserEntity user = registerRepo.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
         if(user.getRole().name().equals("ADMIN")) {
             throw new RuntimeException("Cannot Un-Block Admin");
@@ -168,6 +193,10 @@ public class UserService {
         return registerRepo.findByEmail(user.getEmail())
                 .map(UserEntity::isEnabled)
                 .orElse(false);
+    }
+
+    public Integer totalUsers() {
+        return registerRepo.totalUser();
     }
 
 }

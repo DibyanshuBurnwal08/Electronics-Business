@@ -26,6 +26,8 @@ public class ElectronicEntity {
     @Column(nullable = false)
     private String model;
 
+    private String productType;
+
     @Column(name = "product_condition")
     private String condition;
 
@@ -33,6 +35,8 @@ public class ElectronicEntity {
 
     @Column(nullable = false)
     private Double price;
+
+    private Boolean available = true;
 
     @CreationTimestamp
     private LocalDate createdAt;
