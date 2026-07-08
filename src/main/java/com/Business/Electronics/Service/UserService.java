@@ -4,6 +4,7 @@ import com.Business.Electronics.DTO.AuthDTO;
 import com.Business.Electronics.DTO.LoginDTO;
 import com.Business.Electronics.DTO.UserDTO;
 import com.Business.Electronics.Entity.AuthProvider;
+import com.Business.Electronics.Entity.RefreshToken;
 import com.Business.Electronics.Entity.Role;
 import com.Business.Electronics.Entity.UserEntity;
 import com.Business.Electronics.Repository.RegisterRepo;
@@ -38,8 +39,6 @@ public class UserService {
     @Value("${spring.admin.password}")
     private String password;
 
-    @Value("${jwt.refresh.expiration}")
-    private Long refreshTokenDuration;
 
     public UserDTO register(UserDTO dto) {
         UserEntity entity = toEntity(dto);
@@ -60,7 +59,7 @@ public class UserService {
             registerRepo.save(entity);
             String activationLink = "http://localhost:8080/activate?token=" + entity.getActivationToken();
             String subject = "Activate Your Account";
-            String object = "Click this Link to activate your account:"+activationLink;
+            String object = "Click this Link to activate your account on KULDEEP TELECOM:"+activationLink;
             mailService.sendEmail(entity.getEmail(), subject, object);
             return toDTO(entity);
         }
@@ -80,7 +79,8 @@ public class UserService {
             throw new OAuthException("This account uses Google Sign-In. Please continue with Google");
         }
 
-        String token = refreshTokenService.createRefreshToken(entity).getToken();
+        RefreshToken refreshToken1 = refreshTokenService.createRefreshToken(entity);
+        String token = refreshToken1.getToken();
 
         if(passwordEncoder.matches(user.getPassword(), entity.getPassword())) {
 
@@ -97,6 +97,8 @@ public class UserService {
                     .role(entity.getRole().name())
                     .accessToken(jwtService.generateToken(entity.getEmail()))
                     .build();
+        } else {
+            refreshTokenService.delete(refreshToken1);
         }
         return null;
     }
@@ -143,6 +145,7 @@ public class UserService {
                 .name(entity.getName())
                 .email(entity.getEmail())
                 .createdAt(entity.getCreatedAt())
+                .enabled(entity.isEnabled())
                 .build();
     }
 
@@ -199,4 +202,8 @@ public class UserService {
         return registerRepo.totalUser();
     }
 
+    public List<UserDTO> getAllAdmins() {
+        List<UserEntity> allAdmins = registerRepo.getAllAdmins();
+        return allAdmins.stream().map(this::toDTO).toList();
+    }
 }

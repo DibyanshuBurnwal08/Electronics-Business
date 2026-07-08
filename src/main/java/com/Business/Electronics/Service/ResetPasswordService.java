@@ -51,7 +51,7 @@ public class ResetPasswordService {
         resetPasswordRepo.save(reset);
         String link = "http://localhost:8080/reset-password?token="+reset.getResetToken();
         String subject = "Reset Your Password";
-        String object = "Click this link to reset password:"+link;
+        String object = "Click this link to reset password for KULDEEP TELECOM:"+link;
         mailService.sendEmail(email, subject, object);
         return ForgotPasswordRequest.builder()
                 .token(token)

@@ -1,13 +1,16 @@
 package com.Business.Electronics.Controller;
 
+import com.Business.Electronics.DTO.AddProDTO;
 import com.Business.Electronics.DTO.UserDTO;
 import com.Business.Electronics.Entity.ElectronicEntity;
 import com.Business.Electronics.Service.ElectronicService;
 import com.Business.Electronics.Service.UserService;
+import com.Business.Electronics.exception.CloudinaryException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -60,6 +63,12 @@ public class AdminController {
         return ResponseEntity.ok("Cannot Find The User");
     }
 
+    @GetMapping("/get-admins")
+    public ResponseEntity<List<UserDTO>> getAllAdmins() {
+        List<UserDTO> allAdmins = userService.getAllAdmins();
+        return ResponseEntity.ok(allAdmins);
+    }
+
     @DeleteMapping("/delete-user/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         boolean deleteUser = userService.deleteUser(id);
@@ -81,14 +90,14 @@ public class AdminController {
     }
 
     // admin manipulating with products
-    @PutMapping("/products/add-product")
-    public ResponseEntity<ElectronicEntity> addProduct(@RequestBody ElectronicEntity entity) {
-        ElectronicEntity electronicEntity = electronicService.addProduct(entity);
-        return ResponseEntity.ok(electronicEntity);
+    @PostMapping("/products/add-product")
+    public ResponseEntity<ElectronicEntity> addProduct(@RequestBody AddProDTO dto) {
+        ElectronicEntity entity = electronicService.addProduct(dto);
+        return ResponseEntity.ok(entity);
     }
 
     @DeleteMapping("/products/delete-product/{id}")
-    public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<String> deleteProduct(@PathVariable Long id) throws IOException, CloudinaryException {
         electronicService.deleteProduct(id);
         return ResponseEntity.ok("Product Deleted");
     }

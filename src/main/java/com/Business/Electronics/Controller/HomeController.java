@@ -2,12 +2,10 @@ package com.Business.Electronics.Controller;
 
 import com.Business.Electronics.Entity.ElectronicEntity;
 import com.Business.Electronics.Service.ElectronicService;
-import com.Business.Electronics.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -23,6 +21,12 @@ public class HomeController {
         List<ElectronicEntity> list = electronicService.getProducts();
         System.out.println(list);
         return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/product/{id}")
+    public ResponseEntity<ElectronicEntity> getProduct(@PathVariable Long id) {
+        ElectronicEntity entity = electronicService.getProduct(id);
+        return ResponseEntity.ok(entity);
     }
 
 

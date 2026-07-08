@@ -3,6 +3,7 @@ package com.Business.Electronics.Controller;
 import com.Business.Electronics.DTO.AuthDTO;
 import com.Business.Electronics.DTO.LoginDTO;
 import com.Business.Electronics.DTO.UserDTO;
+import com.Business.Electronics.Service.RefreshTokenService;
 import com.Business.Electronics.Service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProfileController {
 
     private final UserService userService;
+    private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserDTO dto) {
@@ -25,8 +27,6 @@ public class ProfileController {
         }
         return ResponseEntity.status(HttpStatus.CONFLICT).body("Email Already Exits");
     }
-
-
 
     @GetMapping("/activate")
     public ResponseEntity<String> activateProfile(@RequestParam String token) {
@@ -44,6 +44,12 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email Not Register / User is Blocked");
         }
         return ResponseEntity.status(HttpStatus.OK).body(login);
+    }
+
+    @PostMapping("user/logout")
+    public ResponseEntity<String> logout(@CookieValue("refreshToken") String refreshToken) {
+        refreshTokenService.logout(refreshToken);
+        return ResponseEntity.ok("LogOut Successfully");
     }
 
     @GetMapping("/me")

@@ -1,6 +1,7 @@
 package com.Business.Electronics.Repository;
 
 import aj.org.objectweb.asm.commons.Remapper;
+import com.Business.Electronics.DTO.UserDTO;
 import com.Business.Electronics.Entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,4 +25,6 @@ public interface RegisterRepo extends JpaRepository<UserEntity, Long> {
     @Query("SELECT COUNT(u) FROM UserEntity u where u.role = 'USER'")
     Integer totalUser();
 
+    @Query("SELECT a FROM UserEntity a where a.role = 'ADMIN' ")
+    List<UserEntity> getAllAdmins();
 }

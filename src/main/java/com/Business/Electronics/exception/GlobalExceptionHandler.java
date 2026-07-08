@@ -1,6 +1,5 @@
 package com.Business.Electronics.exception;
 
-import com.Business.Electronics.Service.RefreshTokenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,6 +20,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body("Refresh Token Expired");
+    }
+
+    @ExceptionHandler(AddProductFailedException.class)
+    public ResponseEntity<String> handleAddProductException(AddProductFailedException e) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler(CloudinaryException.class)
+    public ResponseEntity<String> handleCloudinaryException(CloudinaryException e) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(e.getMessage());
     }
 
 }

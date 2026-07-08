@@ -4,7 +4,6 @@ import com.Business.Electronics.Entity.AuthProvider;
 import com.Business.Electronics.Entity.RefreshToken;
 import com.Business.Electronics.Entity.Role;
 import com.Business.Electronics.Entity.UserEntity;
-import com.Business.Electronics.Repository.RefreshTokenRepo;
 import com.Business.Electronics.Repository.RegisterRepo;
 import com.Business.Electronics.Service.JwtService;
 import com.Business.Electronics.Service.RefreshTokenService;
@@ -48,8 +47,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             newUser.setEnabled(true);
             newUser.setRole(Role.USER);
             role = newUser.getRole().toString();
+            newUser = registerRepo.save(newUser);
             refreshToken = refreshTokenService.createRefreshToken(newUser);
-            registerRepo.save(newUser);
         }
         String jwt = jwtService.generateToken(email);
         if(byEmail.isPresent()) {

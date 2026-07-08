@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -46,5 +47,15 @@ public class RefreshTokenService {
         UserEntity user = refreshTokenEntity.getUser();
         String accessToken = jwtService.generateToken(user.getEmail());
         return Map.of("accessToken", accessToken);
+    }
+
+    public void logout(String refreshToken) {
+        RefreshToken byToken = tokenRepo.findByToken(refreshToken)
+                .orElseThrow(() -> new UsernameNotFoundException("Unable To find Refresh Token"));
+        tokenRepo.delete(byToken);
+    }
+
+    public void delete(RefreshToken refreshToken1) {
+        tokenRepo.delete(refreshToken1);
     }
 }
